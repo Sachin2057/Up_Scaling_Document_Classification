@@ -5,16 +5,21 @@ import albumentations as A
 import cv2
 from sklearn.model_selection import train_test_split
 
-
 DATASET_DIRECTORY = "Raw"
 CITIZENSHIP_DIRECTORY = os.path.join(DATASET_DIRECTORY, "Citizenship")
 PASSPORT_DIRECTORY = os.path.join(DATASET_DIRECTORY, "Passport")
-OTHER_DIRECTORY = os.path.join(DATASET_DIRECTORY, "Others")
+OTHER_DIRECTORY = os.path.join(DATASET_DIRECTORY, "License")
+LICENSE_DIRECTORY = os.path.join(DATASET_DIRECTORY, "License")
+
 
 TRAIN_SAVE_DIRECTORY = os.path.join("Dataset", "Train")
 VALID_SAVE_DIRECTORY = os.path.join("Dataset", "Valid")
 
-classes = [CITIZENSHIP_DIRECTORY, PASSPORT_DIRECTORY, OTHER_DIRECTORY]
+classes = [
+    CITIZENSHIP_DIRECTORY,
+    PASSPORT_DIRECTORY,
+    LICENSE_DIRECTORY,
+]
 
 
 def get_main_augmentation():
@@ -71,7 +76,7 @@ def image_augmentation(image_path, transformation):
     return augmented_image
 
 
-if __name__ == "__main__":
+def generate_dataset():
     for ix, class_dir in enumerate(classes):
         files = os.listdir(class_dir)
         num_samples_to_augment = int(0.4 * len(files))
