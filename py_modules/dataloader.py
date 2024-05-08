@@ -83,4 +83,4 @@ class ImageClassification(Dataset):
         target = int(image_file.split("-")[0])
         image_path = os.path.join(self._data_path, image_file)
         image = self.load_image(image_path=image_path)
-        return image.to(device), torch.tensor([target]).float().to(device)
+        return image.to(device), torch.tensor(target).to(device)
