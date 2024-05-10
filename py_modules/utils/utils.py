@@ -3,9 +3,22 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
 import os
+import config
 
 
 def generate_confusion_matrix(model, writer, valid_dataloader):
+    """
+    Generates confiusion matrix
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        PyTorch model to evaluate
+    writer (torch.utils.tensorboard.SummaryWriter):
+
+    valid_dataloader :(torch.utils.data.DataLoader)
+        The validation dataloader
+    """
     all_preds = []
     all_labels = []
     model.eval()
@@ -23,7 +36,9 @@ def generate_confusion_matrix(model, writer, valid_dataloader):
     print("Confusion Matrix:")
     print(conf_matrix)
     # Log confusion matrix to TensorBoard
-    writer.add_figure("confusion_matrix", plot_confusion_matrix(conf_matrix, [0, 1, 2]))
+    writer.add_figure(
+        "confusion_matrix", plot_confusion_matrix(conf_matrix, config.classes_name)
+    )
 
 
 def plot_confusion_matrix(cm, classes):
@@ -39,8 +54,9 @@ def plot_confusion_matrix(cm, classes):
 
     Returns
     -------
-    _type_
-        _description_
+     matplotlib.figure.Figure
+        The Figure object containing the plotted confusion matrix heatmap.
+
     """
     plt.figure(figsize=(10, 8))
     sns.heatmap(
@@ -56,6 +72,20 @@ def plot_confusion_matrix(cm, classes):
 
 
 def save_checkpoint(model, optimizer, start_time, epoch):
+    """
+    save checkpoint the model
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        The PyTorch model whose state_dict will be saved.
+    optimizer : torch.optim.Optimizer
+         The optimizer object whose state_dict will be saved.
+    start_time : str
+        The starting time of the training session, used for organizing checkpoints.
+    epoch : int
+       The current epoch number.
+    """
     target_dir = os.path.join("checkpoints", str(start_time))
     os.makedirs(target_dir, exist_ok=True)
     # Save model weights
