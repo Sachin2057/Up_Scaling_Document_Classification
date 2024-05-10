@@ -1,31 +1,49 @@
-from tensorboardX import SummaryWriter
-from py_modules.dataloader import ImageClassification
-import torch
+import os
 import time
+import torch
 from torch.utils.data import DataLoader
 from py_modules.model import ClassificationModel
 import torch.nn as nn
 import torch.optim
 from py_modules.utils.utils import generate_confusion_matrix, save_checkpoint
-import os
+
+import config
+from tensorboardX import SummaryWriter
+from py_modules.dataloader import ImageClassification
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 def training():
+    """
+    Train a classification model.
+
+    This function performs training for a classification model using the provided dataset and configuration.
+
+    Returns:
+        None: Training results are logged and saved to disk.
+
+    Note:
+        This function assumes the presence of a dataset in the 'Dataset' directory.
+        It utilizes a custom ImageClassification dataset class for loading data.
+        The training process includes logging training loss, saving checkpoints, evaluating validation loss and accuracy,
+        and generating a confusion matrix.
+        Checkpoints, logs, and confusion matrix are saved in separate directories for organization.
+    """
+
     train_dataset = ImageClassification(root_directory="Dataset", train=True)
     valid_dataset = ImageClassification(root_directory="Dataset", train=False)
 
     train_dataloader = DataLoader(
-        train_dataset, batch_size=4, shuffle=True, drop_last=True
+        train_dataset, batch_size=config.batch_size, shuffle=True, drop_last=True
     )
     valid_dataloader = DataLoader(
-        valid_dataset, batch_size=4, shuffle=True, drop_last=True
+        valid_dataset, batch_size=config.batch_size, shuffle=True, drop_last=True
     )
 
     EPOCH = 40
     start_time = time.strftime("%b-%d_%H-%M-%S")
-    model = ClassificationModel(num_classes=3).to(device)
+    model = ClassificationModel(num_classes=config.num_classes).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     log_path = os.path.join("logs", f"{start_time}")
