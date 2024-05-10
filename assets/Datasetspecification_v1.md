@@ -4,8 +4,8 @@
     - Passport 🛂=45
     - Licence 🚗=38
 - **Train, Test**
-    - Train= 🚂
-    - Test= 🛤️
+    - Train= 
+    - Test= 
 ## Augmentation 🎨
 - **Training Augmentation**
     - *Offline Augmentation*
