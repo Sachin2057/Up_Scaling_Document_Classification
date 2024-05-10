@@ -27,9 +27,10 @@ class ImageClassification(Dataset):
         else:
             self._data_path = os.path.join(root_directory, "valid")
         self._data = os.listdir(self._data_path)
-        self._transform = self.image_transform()
+        self._transform = self.image_transform(train)
+        self._train = train
 
-    def image_transform(self, image_size=244):
+    def image_transform(self, image_size=224, train=True):
         """
         Defines runtime transformation to images
 
@@ -38,19 +39,31 @@ class ImageClassification(Dataset):
         Transform object
             Sequence of transformation
         """
-        normalize = transforms.Normalize(
-            mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-        )
-        preprocessing = transforms.Compose(
-            [
-                transforms.ToPILImage(),
-                transforms.Resize((image_size, image_size)),
-                transforms.ColorJitter(brightness=0.3, contrast=0.3, hue=0.3),
-                transforms.RandomGrayscale(p=0.5),
-                transforms.ToTensor(),
-                normalize,
-            ]
-        )
+        if train:
+            normalize = transforms.Normalize(
+                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+            )
+            preprocessing = transforms.Compose(
+                [
+                    transforms.ToPILImage(),
+                    transforms.ColorJitter(brightness=0.5, contrast=0.5, hue=0.5),
+                    transforms.RandomGrayscale(p=0.5),
+                    transforms.ToTensor(),
+                    normalize,
+                ]
+            )
+        else:
+            normalize = transforms.Normalize(
+                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+            )
+            preprocessing = transforms.Compose(
+                [
+                    transforms.ToPILImage(),
+                    transforms.ToTensor(),
+                    normalize,
+                ]
+            )
+
         return preprocessing
 
     def load_image(self, image_path):
@@ -72,6 +85,8 @@ class ImageClassification(Dataset):
         # image = self._transform(image)
         image = cv2.imread(image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = image / 255.0
+        image = cv2.resize(image, (224, 224))
         image = self._transform(image)
         return image
 
@@ -80,7 +95,10 @@ class ImageClassification(Dataset):
 
     def __getitem__(self, index):
         image_file = self._data[index]
+        image_file = image_file
+        print(image_file)
         target = int(image_file.split("-")[0])
+        print(target)
         image_path = os.path.join(self._data_path, image_file)
         image = self.load_image(image_path=image_path)
         return image.to(device), torch.tensor(target).to(device)
