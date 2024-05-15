@@ -7,6 +7,7 @@ from py_modules.utils.generate_grad_cam import generate_grad_cam
 import torch
 import config
 
+device="cuda" if torch.cuda.is_available() else "cpu"
 
 def main():
     st.title("Document Classification ")
@@ -23,7 +24,7 @@ def main():
         checkpoint_paths = os.path.join(
             "Checkpoints",
             "May-10_14-43-13",
-            "model_38.pth",
+            "model_39.pth",
         )
 
     if uploaded_image is not None:
@@ -33,13 +34,16 @@ def main():
 
         if selected_model and uploaded_image:
             if selected_model == "ResNet50":
-                model = ClassificationModel(num_classes=config.num_classes)
+                model = ClassificationModel(num_classes=config.num_classes).to(device)
             # elif selected_model == "Model 2":
             #     model = Model2()
 
             checkpoint_path = checkpoint_paths
+            if(torch.cuda.is_available()):
+                model.load_state_dict(torch.load(checkpoint_path))
+            else:
+                model.load_state_dict(torch.load(checkpoint_path,map_location=torch.device('cpu')))
 
-            model.load_state_dict(torch.load(checkpoint_path))
             # Classify the image
             class_index, confidence = predict(model, image)
 
