@@ -7,6 +7,8 @@ from py_modules.utils.generate_grad_cam import generate_grad_cam
 import torch
 import config
 
+index_to_class_mapping = {0: "Citizenship", 1: "Passport", 2: "Licence", 3: "Others"}
+
 
 def main():
     st.title("Document Classification ")
@@ -22,8 +24,8 @@ def main():
     if selected_model == "ResNet50":
         checkpoint_paths = os.path.join(
             "Checkpoints",
-            "May-10_14-43-13",
-            "model_38.pth",
+            "May-15_05-29-24",
+            "model_39.pth",
         )
 
     if uploaded_image is not None:
@@ -42,8 +44,8 @@ def main():
             model.load_state_dict(torch.load(checkpoint_path))
             # Classify the image
             class_index, confidence = predict(model, image)
-
-            st.write(f"Class Index: {class_index}")
+            print(type(class_index))
+            st.write(f"Class: {index_to_class_mapping[class_index]}")
             st.write(f"Confidence: {confidence:.2f}")
 
             # Option to view CAM

@@ -96,9 +96,7 @@ class ImageClassification(Dataset):
     def __getitem__(self, index):
         image_file = self._data[index]
         image_file = image_file
-        print(image_file)
         target = int(image_file.split("-")[0])
-        print(target)
         image_path = os.path.join(self._data_path, image_file)
         image = self.load_image(image_path=image_path)
         return image.to(device), torch.tensor(target).to(device)

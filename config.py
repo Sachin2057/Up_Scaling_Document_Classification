@@ -14,10 +14,10 @@ classes = [
     CITIZENSHIP_DIRECTORY,
     PASSPORT_DIRECTORY,
     LICENSE_DIRECTORY,
-    # OTHER_DIRECTORY,
+    OTHER_DIRECTORY,
 ]
 
 ######Model parameters
 batch_size = 16
-classes_name = ["Citizenship", "Passport", "License"]
-num_classes = 3
+classes_name = ["Citizenship", "Passport", "License", "Others"]
+num_classes = 4
