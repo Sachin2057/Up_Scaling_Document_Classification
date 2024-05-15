@@ -7,13 +7,8 @@ from py_modules.utils.generate_grad_cam import generate_grad_cam
 import torch
 import config
 
-<<<<<<< HEAD
 device="cuda" if torch.cuda.is_available() else "cpu"
-=======
-index_to_class_mapping = {0: "Citizenship", 1: "Passport", 2: "Licence", 3: "Others"}
-
->>>>>>> 3f4ab5430cc88403b774ecbd17cc5ba54ddb12b1
-
+index_to_class_mapping={0:"Citizenship",1:"Passport",2:"Licence",3:"Others"}
 def main():
     st.title("Document Classification ")
 
@@ -28,11 +23,7 @@ def main():
     if selected_model == "ResNet50":
         checkpoint_paths = os.path.join(
             "Checkpoints",
-<<<<<<< HEAD
-            "May-10_14-43-13",
-=======
             "May-15_05-29-24",
->>>>>>> 3f4ab5430cc88403b774ecbd17cc5ba54ddb12b1
             "model_39.pth",
         )
 
@@ -53,13 +44,13 @@ def main():
             else:
                 model.load_state_dict(torch.load(checkpoint_path,map_location=torch.device('cpu')))
 
-            # Classify the image
+            
             class_index, confidence = predict(model, image)
             print(type(class_index))
             st.write(f"Class: {index_to_class_mapping[class_index]}")
             st.write(f"Confidence: {confidence:.2f}")
 
-            # Option to view CAM
+            
             if st.sidebar.checkbox("View Class Activation Map (CAM)"):
                 # Generate CAM
                 cam = generate_grad_cam(model, image, class_index)
