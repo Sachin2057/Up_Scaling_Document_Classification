@@ -26,3 +26,13 @@
  ## Second itteration
  - Initial step same as first itteration
  - Before augmentation split the dataset then apply augmentaion 
+
+ ## Third iteration
+    - The raw images are organized in the following folder structure:
+         ```
+          RAW
+             ├───Citizenship 🏛️
+             ├───License 🚗
+             ├───Others
+             └───Passport 🛂
+         ```
