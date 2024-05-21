@@ -9,7 +9,20 @@ import config
 
 def get_main_augmentation():
     """
-    Saptial augmentation for main data augmentation
+    Creates and returns a spatial augmentation pipeline for main data augmentation.
+
+    The augmentation pipeline includes the following transformations:
+    - RandomResizedCrop: Randomly crops and resizes the image to 224x224 pixels,
+                         with a scale between 80% and 100% of the original size.
+    - HorizontalFlip: Horizontally flips the image with a 50% probability.
+    - VerticalFlip: Vertically flips the image with a 50% probability.
+    - Rotate: Rotates the image within a range of -30 to +30 degrees with a 50% probability.
+    - Affine: Applies an affine transformation with a shear range of -25 to +25 degrees and a 50% probability.
+
+    Returns
+    -------
+    A.Compose
+        An Albumentations Compose object that applies the defined transformations.
     """
     transform = A.Compose(
         [
@@ -25,7 +38,18 @@ def get_main_augmentation():
 
 def get_valid_augmentation():
     """
-    Validation augmentation
+    Creates and returns a color jitter augmentation pipeline for validation data.
+
+    The augmentation pipeline includes the following transformations:
+    - ColorJitter (brightness): Adjusts brightness by a factor of 0.8 to 1.2.
+    - ColorJitter (contrast): Adjusts contrast by a factor of 0.5 to 1.5.
+    - ColorJitter (saturation): Adjusts saturation by a factor of 0.5 to 1.5.
+    - ColorJitter (hue): Adjusts hue by a factor of 0.5.
+
+    Returns
+    -------
+    A.Compose
+        An Albumentations Compose object that applies the defined transformations.
     """
     valid_transform = A.Compose(
         [
@@ -40,19 +64,19 @@ def get_valid_augmentation():
 
 def image_augmentation(image_path, transformation):
     """
-    Perform image augmentation
+    Performs image augmentation using the specified transformation.
 
     Parameters
     ----------
-    image_path : str or nd_array
-        path of the image
-    transformation : transfomation
-        Transformation to be applied
+    image_path : str or ndarray
+        Path to the image file or the image array.
+    transformation : A.Compose
+        The Albumentations transformation to be applied.
 
     Returns
     -------
-    image:numpy_array
-        Augmented image
+    numpy.ndarray
+        The augmented image.
     """
     if type(image_path) is str:
         image = cv2.imread(image_path)
@@ -65,8 +89,18 @@ def image_augmentation(image_path, transformation):
 
 def generate_dataset():
     """
-    Load images from the raw folders split the images into train split
-    add augmentaion and save in training directory
+    Loads images from the raw folders, splits them into training and validation sets,
+    applies augmentations, and saves the augmented images to the corresponding directories.
+
+    The function performs the following steps:
+    - For each class directory, lists all image files.
+    - Splits the image files into training and validation sets.
+    - For the training set, applies the main augmentation and saves the augmented images.
+    - For the validation set, applies the main and validation augmentations and saves the augmented images.
+
+    Returns
+    -------
+    None
     """
     for ix, class_dir in enumerate(config.classes):
         files = os.listdir(class_dir)

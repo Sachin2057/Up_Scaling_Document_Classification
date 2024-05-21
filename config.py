@@ -18,6 +18,6 @@ classes = [
 ]
 
 ######Model parameters
-batch_size = 16
+batch_size = 8
 classes_name = ["Citizenship", "Passport", "License", "Others"]
 num_classes = 4
