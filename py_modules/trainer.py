@@ -6,7 +6,7 @@ from py_modules.model import ClassificationModel
 import torch.nn as nn
 import torch.optim
 from py_modules.utils.utils import generate_confusion_matrix, save_checkpoint
-
+from py_modules.docx_model import docxclassifier_base
 import config
 from tensorboardX import SummaryWriter
 from py_modules.dataloader import ImageClassification
@@ -14,7 +14,7 @@ from py_modules.dataloader import ImageClassification
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
-def training():
+def training(model_name, checkpoint=None):
     """
     Train a classification model.
 
@@ -42,19 +42,35 @@ def training():
     )
 
     EPOCH = 40
+    epoch = 0
     start_time = time.strftime("%b-%d_%H-%M-%S")
-    model = ClassificationModel(num_classes=config.num_classes).to(device)
-    criterion = nn.CrossEntropyLoss()
+    if model_name == "ResNet":
+        model = ClassificationModel(num_classes=config.num_classes).to(device)
+    if model_name == "Docx":
+        model = docxclassifier_base().to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    if checkpoint:
+        model.load_state_dict(torch.load(checkpoint))
+        epoch_path = os.path.splitext(checkpoint)[0]
+        epoch = int(epoch_path.split("_")[-1]) + 1
+        optimizer_path = os.path.split(checkpoint)[0]
+        optimizer_path = os.path.join(optimizer_path, f"optimizer_{epoch-1}.pth")
+        print(optimizer_path)
+        optimizer.load_state_dict(torch.load(optimizer_path))
+        print("loading successful")
+    criterion = nn.CrossEntropyLoss()
     log_path = os.path.join("logs", f"{start_time}")
     writer = SummaryWriter(log_dir=log_path)
-    for i in range(EPOCH):
+    for i in range(epoch, EPOCH):
         print(EPOCH)
         model.train()
         running_train_loss = 0.0
         for image, target in train_dataloader:
             optimizer.zero_grad()
-            output = model(image)
+            if model_name == "ResNet":
+                output = model(image)
+            elif model_name == "Docx":
+                output, attention = model(image)
             loss = criterion(output, target)
             loss.backward()
             optimizer.step()
@@ -73,7 +89,11 @@ def training():
         all_labels = []
         with torch.no_grad():
             for image, target in valid_dataloader:
-                output = model(image)
+                if model == "ResNet":
+                    output = model(image)
+                elif model == "Docx":
+                    output, atten_map = model(image)
+
                 loss = criterion(output, target)
                 running_val_loss += loss.item()
                 _, predicted = torch.max(output, 1)
