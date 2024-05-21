@@ -7,8 +7,10 @@ from py_modules.utils.generate_grad_cam import generate_grad_cam
 import torch
 import config
 
-device="cuda" if torch.cuda.is_available() else "cpu"
-index_to_class_mapping={0:"Citizenship",1:"Passport",2:"Licence",3:"Others"}
+device = "cuda" if torch.cuda.is_available() else "cpu"
+index_to_class_mapping = {0: "Citizenship", 1: "Passport", 2: "Licence", 3: "Others"}
+
+
 def main():
     st.title("Document Classification ")
 
@@ -23,8 +25,8 @@ def main():
     if selected_model == "ResNet50":
         checkpoint_paths = os.path.join(
             "Checkpoints",
-            "May-15_05-29-24",
-            "model_39.pth",
+            "May-17_12-21-21",
+            "model_32.pth",
         )
 
     if uploaded_image is not None:
@@ -39,22 +41,20 @@ def main():
             #     model = Model2()
 
             checkpoint_path = checkpoint_paths
-            if(torch.cuda.is_available()):
+            if torch.cuda.is_available():
                 model.load_state_dict(torch.load(checkpoint_path))
             else:
-                model.load_state_dict(torch.load(checkpoint_path,map_location=torch.device('cpu')))
+                model.load_state_dict(
+                    torch.load(checkpoint_path, map_location=torch.device("cpu"))
+                )
 
-            
             class_index, confidence = predict(model, image)
             print(type(class_index))
             st.write(f"Class: {index_to_class_mapping[class_index]}")
             st.write(f"Confidence: {confidence:.2f}")
 
-            
             if st.sidebar.checkbox("View Class Activation Map (CAM)"):
-                # Generate CAM
                 cam = generate_grad_cam(model, image, class_index)
-                # Apply heatmap
                 st.image(
                     cam,
                     caption="Class Activation Map (CAM)",
