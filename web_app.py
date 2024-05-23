@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 from PIL import Image
-from py_modules.model import ClassificationModel
+from py_modules.model import ClassificationModel, ClassificationModelResNet
 from py_modules.inference import predict
 from py_modules.utils.generate_grad_cam import generate_grad_cam
 import torch
@@ -20,13 +20,19 @@ def main():
     )
 
     st.sidebar.title("Select Model")
-    selected_model = st.sidebar.selectbox("Choose a model", ["ResNet50"])
+    selected_model = st.sidebar.selectbox("Choose a model", ["ResNet50", "Inception"])
 
     if selected_model == "ResNet50":
         checkpoint_paths = os.path.join(
             "Checkpoints",
             "May-17_12-21-21",
             "model_32.pth",
+        )
+    if selected_model == "Inception":
+        checkpoint_paths = os.path.join(
+            "Checkpoints",
+            "May-23_16-45-11",
+            "model_39.pth",
         )
 
     if uploaded_image is not None:
@@ -36,7 +42,14 @@ def main():
 
         if selected_model and uploaded_image:
             if selected_model == "ResNet50":
-                model = ClassificationModel(num_classes=config.num_classes).to(device)
+                model = ClassificationModelResNet(num_classes=config.num_classes).to(
+                    device
+                )
+            if selected_model == "Inception":
+                model = ClassificationModel(
+                    num_classes=config.num_classes, model_name="Inception"
+                ).to(device)
+
             # elif selected_model == "Model 2":
             #     model = Model2()
 
@@ -54,7 +67,7 @@ def main():
             st.write(f"Confidence: {confidence:.2f}")
 
             if st.sidebar.checkbox("View Class Activation Map (CAM)"):
-                cam = generate_grad_cam(model, image, class_index)
+                cam = generate_grad_cam(model, image, class_index, selected_model)
                 st.image(
                     cam,
                     caption="Class Activation Map (CAM)",

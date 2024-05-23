@@ -2,10 +2,14 @@ import os
 import time
 import torch
 from torch.utils.data import DataLoader
-from py_modules.model import ClassificationModel
+from py_modules.model import ClassificationModel, ClassificationModelResNet
 import torch.nn as nn
 import torch.optim
-from py_modules.utils.utils import generate_confusion_matrix, save_checkpoint
+from py_modules.utils.utils import (
+    generate_confusion_matrix,
+    save_checkpoint,
+    calcualte_f1_score,
+)
 from py_modules.docx_model import docxclassifier_base
 import config
 from tensorboardX import SummaryWriter
@@ -31,8 +35,12 @@ def training(model_name, checkpoint=None):
         Checkpoints, logs, and confusion matrix are saved in separate directories for organization.
     """
 
-    train_dataset = ImageClassification(root_directory="Dataset", train=True)
-    valid_dataset = ImageClassification(root_directory="Dataset", train=False)
+    train_dataset = ImageClassification(
+        root_directory="Dataset", train=True, model_name=model_name
+    )
+    valid_dataset = ImageClassification(
+        root_directory="Dataset", train=False, model_name=model_name
+    )
 
     train_dataloader = DataLoader(
         train_dataset, batch_size=config.batch_size, shuffle=True, drop_last=True
@@ -45,7 +53,11 @@ def training(model_name, checkpoint=None):
     epoch = 0
     start_time = time.strftime("%b-%d_%H-%M-%S")
     if model_name == "ResNet":
-        model = ClassificationModel(num_classes=config.num_classes).to(device)
+        model = ClassificationModelResNet(num_classes=config.num_classes).to(device)
+    if model_name == "Inception":
+        model = ClassificationModel(
+            model_name=model_name, num_classes=config.num_classes
+        ).to(device)
     if model_name == "Docx":
         model = docxclassifier_base().to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
@@ -69,7 +81,7 @@ def training(model_name, checkpoint=None):
             optimizer.zero_grad()
             if model_name == "ResNet":
                 output = model(image)
-            elif model_name == "Docx":
+            elif model_name == "Docx" or model_name == "Inception":
                 output, attention = model(image)
             loss = criterion(output, target)
             loss.backward()
@@ -89,11 +101,12 @@ def training(model_name, checkpoint=None):
         all_labels = []
         with torch.no_grad():
             for image, target in valid_dataloader:
-                if model == "ResNet":
+                if model_name == "ResNet":
                     output = model(image)
-                elif model == "Docx":
-                    output, atten_map = model(image)
-
+                elif model_name == "Docx":
+                    output, attention = model(image)
+                elif model_name == "Inception":
+                    output = model(image)
                 loss = criterion(output, target)
                 running_val_loss += loss.item()
                 _, predicted = torch.max(output, 1)
@@ -107,5 +120,11 @@ def training(model_name, checkpoint=None):
             writer.add_scalar("validation_accuracy", val_accuracy, i)
 
     generate_confusion_matrix(
-        model=model, writer=writer, valid_dataloader=valid_dataloader
+        model=model,
+        writer=writer,
+        valid_dataloader=valid_dataloader,
+        model_name=model_name,
+    )
+    calcualte_f1_score(
+        model=model, writer=writer, valid_loader=valid_dataloader, model_name=model_name
     )

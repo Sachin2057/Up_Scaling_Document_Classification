@@ -21,13 +21,16 @@ class ImageClassification(Dataset):
     Load image and target
     """
 
-    def __init__(self, root_directory, train=True):
+    def __init__(self, root_directory, model_name="", train=True):
         if train:
             self._data_path = os.path.join(root_directory, "train")
         else:
             self._data_path = os.path.join(root_directory, "valid")
         self._data = os.listdir(self._data_path)
-        self._transform = self.image_transform(train)
+        if model_name == "Inception":
+            self._transform = self.image_transform(image_size=299, train=train)
+        else:
+            self._transform = self.image_transform(train)
         self._train = train
 
     def image_transform(self, image_size=224, train=True):
@@ -86,7 +89,7 @@ class ImageClassification(Dataset):
         image = cv2.imread(image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = image / 255.0
-        image = cv2.resize(image, (224, 224))
+        image = cv2.resize(image, (299, 299))
         image = self._transform(image)
         return image
 

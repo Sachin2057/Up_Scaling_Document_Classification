@@ -22,7 +22,7 @@ from PIL import Image
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
-def generate_grad_cam(model, input_image_path, target):
+def generate_grad_cam(model, input_image_path, target, selected_model):
     """
     Generate Grad-CAM visualization for a given input image and target class.
 
@@ -47,7 +47,7 @@ def generate_grad_cam(model, input_image_path, target):
     preprocessing = transforms.Compose(
         [
             transforms.ToPILImage(),
-            transforms.Resize((224, 224)),
+            transforms.Resize((299, 299)),
             transforms.ToTensor(),
             normalize,
         ]
@@ -55,20 +55,23 @@ def generate_grad_cam(model, input_image_path, target):
     if type(input_image_path) is str:
         image = cv2.imread(input_image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        image = cv2.resize(image, (224, 224))
+        image = cv2.resize(image, (299, 299))
         image = np.float32(image) / 255
 
     else:
         image = input_image_path
         image = np.array(image)
-        image = cv2.resize(image, (224, 224))
+        image = cv2.resize(image, (299, 299))
         image = np.float32(image) / 255
 
     image_tensor = preprocessing(image).to(device)
     image_tensor = image_tensor[None, :, :, :]
-    # model = ClassificationModel(num_classes=config.num_classes).to(device)
-    # model.load_state_dict(torch.load(checkpoint))
-    target_layer = model.resnet.layer4
+    if selected_model == "ResNet50":
+        # model = ClassificationModel(num_classes=config.num_classes).to(device)
+        # model.load_state_dict(torch.load(checkpoint))
+        target_layer = model.resnet.layer4
+    else:
+        target_layer = [model.backbone.Mixed_7c.branch3x3dbl_3b]
     # cam = GradCAM(model=model, target_layers=target_layer)
     targets = [
         ClassifierOutputTarget(target),

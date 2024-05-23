@@ -26,7 +26,6 @@ def get_main_augmentation():
     """
     transform = A.Compose(
         [
-            A.RandomResizedCrop(height=224, width=224, scale=(0.8, 1.0)),
             A.HorizontalFlip(p=0.5),
             A.VerticalFlip(p=0.5),
             A.Rotate(limit=30, p=0.5),
@@ -82,6 +81,8 @@ def image_augmentation(image_path, transformation):
         image = cv2.imread(image_path)
     else:
         image = image_path
+
+    image = cv2.resize(image, (299, 299))
     augmented = transformation(image=image)
     augmented_image = augmented["image"]
     return augmented_image
